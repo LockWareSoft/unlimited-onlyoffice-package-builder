@@ -79,6 +79,11 @@ jobs:
           PRODUCT_VERSION: ${{ steps.get-product-version.outputs.product-version }}
         id: get-build-number
         run: echo "build-number=${VERSION##$PRODUCT_VERSION.}" >> $GITHUB_OUTPUT
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}        
       - name: Docker build binaries
         id: docker-build-binaries
         run: |
@@ -89,39 +94,4 @@ jobs:
           docker ps -a
           docker container prune -f
           docker ps -a
-      - name: Docker build deb package
-        id: docker-build-deb
-        run: |
-          ./onlyoffice-package-builder.sh --product-version=${{ steps.get-product-version.outputs.product-version }} --build-number=${{ steps.get-build-number.outputs.build-number }} --unlimited-organization=${{ github.repository_owner }} --tag-suffix=${{ env.TAG_SUFFIX }} --debian-package-suffix=${{ env.DEBIAN_PACKAGE_SUFFIX }} --deb-only
-      - name: Get tgz release filename
-        id: deb-release
-        run: |
-          RELEASE_DEB=$(find "${{ github.workspace }}" -name "onlyoffice-documentserver_${{ steps.get-product-version.outputs.product-version }}-${{ steps.get-build-number.outputs.build-number }}${{ env.DEBIAN_PACKAGE_SUFFIX }}_amd64.deb" -type f)
-          RELEASE_SHORT_DEB=$(basename ${RELEASE_DEB})
-          echo "filename=${RELEASE_DEB}" >> $GITHUB_OUTPUT
-          echo "shortfilename=${RELEASE_SHORT_DEB}" >> $GITHUB_OUTPUT
-      - name: Release
-        uses: crowbarmaster/GH-Automatic-Releases@v1.6.0
-        with:
-          repo_token: ${{ github.token }}
-          prerelease: false
-          generate_notes: false
-          automatic_release_tag: onlyoffice-unlimited-build-${{ env.DISTRO_TAG_PREFIX }}/${{ steps.split-tag.outputs.version }}
-          title: OnlyOffice ${{ steps.split-tag.outputs.version }} Unlimited Build ( ${{ env.DISTRO_FULLNAME }} )
-          body: |
-            Make sure to install and check that the default deb binary from OnlyOffice repo works for you.
-            Then install this deb on your system thanks to:
-            ```
-            apt install /path/to/${{ steps.deb-release.outputs.shortfilename }}
-            ```
-          files: |
-            ${{ steps.deb-release.outputs.filename }}
-      - name: Export container filesystem
-        run: |
-          tar -czf /tmp/debian11-rootfs.tar.gz --exclude=/tmp --exclude=/proc --exclude=/sys /
-        
-      - name: Upload container image rootfs
-        uses: actions/upload-artifact@v4
-        with:
-          name: debian11-rootfs
-          path: /tmp/debian11-rootfs.tar.gz            
+          

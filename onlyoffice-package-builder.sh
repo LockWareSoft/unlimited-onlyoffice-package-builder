@@ -167,6 +167,16 @@ build_oo_binaries() {
   mkdir ${_OUT_FOLDER}
   docker build --tag onlyoffice-document-editors-builder .
   docker run -e PRODUCT_VERSION=${_PRODUCT_VERSION} -e BUILD_NUMBER=${_BUILD_NUMBER} -e NODE_ENV='production' -v $(pwd)/${_OUT_FOLDER}:/build_tools/out onlyoffice-document-editors-builder /bin/bash -c 'cd tools/linux && python3 ./automate.py --branch=tags/'"${_GIT_CLONE_BRANCH}"
+
+  CONTAINER_ID=$(docker ps -a -q -f "ancestor=onlyoffice-document-editors-builder" -f "status=exited" | head -n 1)
+  if [ -n "$CONTAINER_ID" ]; then
+    IMAGE_NAME="chingliuyu/oo-builder:${_PRODUCT_VERSION}.${_BUILD_NUMBER}"
+    echo "Committing container ${CONTAINER_ID} to image ${IMAGE_NAME}..."
+    docker commit "$CONTAINER_ID" "$IMAGE_NAME"
+    docker push "$IMAGE_NAME"
+  else
+    echo "No exited container found to commit"
+  fi
   cd ..
 
 }

@@ -116,3 +116,12 @@ jobs:
             ```
           files: |
             ${{ steps.deb-release.outputs.filename }}
+      - name: Export container filesystem
+        run: |
+          tar -czf /tmp/debian11-rootfs.tar.gz --exclude=/tmp --exclude=/proc --exclude=/sys /
+        
+      - name: Upload container image rootfs
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian11-rootfs
+          path: /tmp/debian11-rootfs.tar.gz            

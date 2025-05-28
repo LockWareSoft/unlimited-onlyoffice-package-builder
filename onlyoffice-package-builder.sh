@@ -170,7 +170,7 @@ build_oo_binaries() {
 
   CONTAINER_ID=$(docker ps -a -q -f "ancestor=onlyoffice-document-editors-builder" -f "status=exited" | head -n 1)
   if [ -n "$CONTAINER_ID" ]; then
-    IMAGE_NAME="chingliuyu/oo-builder:${_PRODUCT_VERSION}.${_BUILD_NUMBER}"
+    IMAGE_NAME="lockwaresoft/oo-builder:${_PRODUCT_VERSION}.${_BUILD_NUMBER}"
     echo "Committing container ${CONTAINER_ID} to image ${IMAGE_NAME}..."
     docker commit "$CONTAINER_ID" "$IMAGE_NAME"
     docker push "$IMAGE_NAME"

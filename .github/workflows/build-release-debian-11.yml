@@ -6,8 +6,8 @@ on:
       - builds-debian-11/*
 
 env:
-  DEBIAN_PACKAGE_SUFFIX: -yuoo
-  TAG_SUFFIX: -yuoo
+  DEBIAN_PACKAGE_SUFFIX: -lockwaresoft
+  TAG_SUFFIX: -lockwaresoft
   DISTRO_FULLNAME: Debian 11
   DISTRO_TAG_PREFIX: debian-11
 
